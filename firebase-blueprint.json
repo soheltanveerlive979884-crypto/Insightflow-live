@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "isPro": { "type": "boolean", "description": "Whether the user has premium status" },
+        "preferredModel": { "type": "string", "enum": ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash-exp"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "history": {
+      "title": "Search History",
+      "description": "User's search history entries",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "query": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "hasMedia": { "type": "boolean" }
+      },
+      "required": ["uid", "query", "timestamp"]
+    },
+    "tasks": {
+      "title": "Background Task",
+      "description": "Long-running AI generation tasks that persist after browser close",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "query": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "result": { "type": "object" },
+        "error": { "type": "string" },
+        "progress": { "type": "number" }
+      },
+      "required": ["id", "query", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": "history",
+      "description": "User search history"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "tasks",
+      "description": "Persistent background tasks"
+    },
+    "/users/{userId}/state/{stateId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sessions": { "type": "array" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "description": "User's current application state and chat session"
+    },
+    "/admin/config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "geminiApiKey": { "type": "string" }
+        }
+      },
+      "description": "Global admin configuration"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "InsightFlow",
+  "description": "InsightFlow Pro: An elite AI search and vision engine with real-time analysis, voice assistance, AI image generation, and multi-modal capabilities.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

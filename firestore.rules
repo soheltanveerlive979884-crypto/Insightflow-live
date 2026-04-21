@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - isPro: bool (optional)
+    //   - preferredModel: string (optional, enum)
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: users/{userId}/history
+    // Document ID: {historyId}
+    // Fields:
+    //   - uid: string (required)
+    //   - query: string (required)
+    //   - timestamp: timestamp (required)
+    //   - hasMedia: bool (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             (request.auth.token.email == "soheltanveerlive979884@gmail.com" || 
+              request.auth.uid == "BSt8l1Ji8kVZ8m4Xdfy54EjH1y52");
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string;
+    }
+
+    function isValidHistory(data) {
+      return data.keys().hasAll(['uid', 'query', 'timestamp']) &&
+             data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+      
+      match /history/{historyId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /tasks/{taskId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /state/{stateId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /users {
+      allow list: if isAdmin();
+    }
+
+    match /admin/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Allow collection group count for history
+    match /{path=**}/history/{historyId} {
+      allow read: if isAdmin();
+    }
+  }
+}
